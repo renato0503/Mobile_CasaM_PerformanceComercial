@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CASA MASSIMA | Sales Intelligence</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+    <style>
+        /* =========================================
+           iOS / APPLE THEME VARIABLES
+           ========================================= */
+        :root {
+            --ios-bg: #000000;
+            --ios-card: #1c1c1e;
+            --ios-card-border: #2c2c2e;
+            --ios-input-bg: #2c2c2e;
+            --ios-header-bg: rgba(28, 28, 30, 0.85);
+            
+            --brand-red: #ff453a;
+            --brand-gold: #ffd60a;
+            --brand-blue: #0a84ff;
+            --brand-green: #30d158;
+            --brand-orange: #ff9f0a;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --text-tertiary: #48484a;
+
+            --radius-l: 20px;
+            --radius-m: 12px;
+            --radius-s: 8px;
+            
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--ios-bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            overflow-x: hidden;
+            padding-bottom: calc(80px + var(--safe-area-bottom));
+        }
+
+        /* =========================================
+           HEADER & NAVIGATION
+           ========================================= */
+        .app-header {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: calc(60px + var(--safe-area-top));
+            padding-top: var(--safe-area-top);
+            background: var(--ios-header-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 0.5px solid var(--ios-card-border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding-left: 16px; padding-right: 16px;
+            z-index: 1000;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .menu-btn { background: none; border: none; color: var(--brand-gold); font-size: 22px; cursor: pointer; padding: 5px; }
+        .app-title { font-weight: 700; font-size: 17px; letter-spacing: -0.5px; }
+        .app-title span { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 400; text-transform: uppercase; }
+        .header-actions { display: flex; gap: 15px; }
+        .action-btn { background: none; border: none; color: var(--brand-blue); font-size: 18px; cursor: pointer; }
+
+        /* =========================================
+           SIDEBAR (DRAWER)
+           ========================================= */
+        .drawer-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 1001;
+            opacity: 0; pointer-events: none; transition: 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+        .drawer-overlay.active { opacity: 1; pointer-events: all; }
+
+        .drawer {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 280px; background: var(--ios-card);
+            transform: translateX(-100%); transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1002; padding: 30px 20px;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--ios-card-border);
+        }
+        .drawer.active { transform: translateX(0); }
+
+        .brand-profile { margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        .brand-logo { 
+            width: 48px; height: 48px; border-radius: 12px; 
+            background: linear-gradient(135deg, #7a1f20, #3e1213);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--brand-gold); font-weight: 800; font-size: 20px;
+            box-shadow: 0 4px 15px rgba(122, 31, 32, 0.4);
+        }
+        
+        .nav-list { list-style: none; padding: 0; margin: 0; flex: 1; }
+        .nav-item { margin-bottom: 10px; }
+        .nav-link {
+            display: flex; align-items: center; gap: 15px;
+            padding: 14px; border-radius: 12px;
+            color: var(--text-secondary); text-decoration: none;
+            font-weight: 600; font-size: 15px; transition: 0.2s;
+        }
+        .nav-link.active { background: rgba(255, 69, 58, 0.15); color: var(--brand-red); }
+        .user-info { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--ios-card-border); display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+
+        /* =========================================
+           MAIN CONTENT
+           ========================================= */
+        .container {
+            padding: calc(75px + var(--safe-area-top)) 16px 20px 16px;
+            max-width: 800px; margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 13px; text-transform: uppercase; color: var(--text-secondary);
+            margin-bottom: 8px; margin-left: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* KPI Horizontal Scroll */
+        .kpi-scroller {
+            display: flex; gap: 12px; overflow-x: auto;
+            padding-bottom: 10px; margin-bottom: 20px;
+            scrollbar-width: none; 
+        }
+        .kpi-scroller::-webkit-scrollbar { display: none; }
+
+        .kpi-card {
+            min-width: 150px; flex: 1;
+            background: var(--ios-card); padding: 16px;
+            border-radius: var(--radius-l);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .kpi-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .kpi-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; }
+        .kpi-badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .bg-up { background: rgba(48, 209, 88, 0.15); color: var(--brand-green); }
+        .bg-down { background: rgba(255, 69, 58, 0.15); color: var(--brand-red); }
+
+        .kpi-value { font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.5px; margin: 5px 0; }
+        .kpi-sub { font-size: 10px; color: var(--text-tertiary); }
+
+        /* Chart Cards */
+        .chart-card {
+            background: var(--ios-card); padding: 15px; border-radius: var(--radius-l);
+            margin-bottom: 24px; position: relative;
+        }
+        .chart-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .chart-controls button {
+            background: var(--ios-input-bg); border: none; color: var(--text-secondary);
+            font-size: 10px; padding: 4px 8px; border-radius: 6px; margin-left: 4px;
+        }
+        .chart-controls button.active { background: var(--brand-gold); color: black; }
+
+        .chart-wrapper { position: relative; height: 280px; width: 100%; }
+
+        /* Table (Mobile List View) */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 24px; border-radius: var(--radius-m); border: 1px solid var(--ios-card-border); }
+        .custom-table { width: 100%; border-collapse: collapse; min-width: 500px; /* Force scroll on small screens */ }
+        .custom-table th { background: var(--ios-input-bg); color: var(--text-secondary); font-size: 11px; padding: 10px; text-align: left; text-transform: uppercase; }
+        .custom-table td { background: var(--ios-card); padding: 12px 10px; border-bottom: 1px solid #222; font-size: 13px; color: white; vertical-align: middle; }
+        .custom-table tr:last-child td { border-bottom: none; }
+        
+        .agent-flex { display: flex; align-items: center; gap: 10px; }
+        .agent-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+
+        /* CRM List */
+        .crm-list { list-style: none; padding: 0; margin: 0; }
+        .crm-item {
+            background: var(--ios-card); padding: 15px; border-radius: var(--radius-m);
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border-left: 3px solid transparent;
+        }
+        .crm-item.high { border-left-color: var(--brand-red); }
+        .crm-item.medium { border-left-color: var(--brand-orange); }
+        
+        .crm-info h4 { margin: 0; font-size: 14px; color: white; }
+        .crm-info p { margin: 3px 0 0; font-size: 11px; color: var(--text-secondary); }
+        .crm-days { font-size: 13px; font-weight: 700; text-align: right; }
+        .crm-days span { display: block; font-size: 9px; font-weight: 400; text-transform: uppercase; color: var(--text-secondary); }
+        .text-red { color: var(--brand-red); } .text-orange { color: var(--brand-orange); }
+
+        /* FAB (Floating Action Button) for Mobile Add */
+        .fab {
+            position: fixed; bottom: calc(20px + var(--safe-area-bottom)); right: 20px;
+            width: 56px; height: 56px; background: var(--brand-blue);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 24px; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);
+            z-index: 900; border: none;
+        }
+
+        /* Modal Sheet */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; align-items: flex-end; justify-content: center;
+        }
+        .modal-sheet {
+            background: var(--ios-card); width: 100%; max-width: 600px;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            padding: 20px; padding-bottom: calc(20px + var(--safe-area-bottom));
+            animation: slideUp 0.3s ease-out;
+            max-height: 85vh; overflow-y: auto;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sheet-title { font-weight: 700; font-size: 18px; }
+
+        .ios-input-group { margin-bottom: 15px; }
+        .ios-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
+        .ios-input {
+            width: 100%; background: var(--ios-input-bg); border: none; border-radius: 8px;
+            padding: 12px; color: white; font-size: 16px; outline: none;
+        }
+        .ios-btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+        .btn-primary { background: var(--brand-blue); color: white; }
+        
+        /* Matrix specific */
+        .matrix-container { position: relative; height: 300px; width: 100%; }
+        .q-label { position: absolute; font-size: 9px; font-weight: 800; text-transform: uppercase; opacity: 0.4; pointer-events: none; }
+        .ql-1 { top: 5px; right: 5px; color: var(--brand-green); } 
+        .ql-2 { top: 5px; left: 5px; color: var(--brand-blue); } 
+        .ql-3 { bottom: 5px; right: 5px; color: var(--brand-orange); } 
+        .ql-4 { bottom: 5px; left: 5px; color: var(--brand-red); }
+
+    </style>
+</head>
+<body>
+
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleMenu()"></div>
+    <aside class="drawer" id="mainDrawer">
+        <div class="brand-profile">
+            <div class="brand-logo">M</div>
+            <div>
+                <div style="font-weight:700; font-size:16px;">CASA MASSIMA</div>
+                <div style="font-size:11px; color:var(--text-secondary);">Enterprise ERP</div>
+            </div>
+        </div>
+        
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="https://renato0503.github.io/Mobile_CasaM_Menu/" class="nav-link">
+                    <i class="fa fa-truck-fast"></i> Simulador Logístico
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://renato0503.github.io/Mobile_CasaM_PerformanceComercial/" class="nav-link active">
+                    <i class="fa fa-chart-line"></i> Performance
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://renato0503.github.io/Mobile_CasaM_EquipeVendas/" class="nav-link">
+                    <i class="fa fa-users"></i> Equipe
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://renato0503.github.io/Mobile_CasaM_Comissoes/" class="nav-link">
+                    <i class="fa fa-file-invoice-dollar"></i> Comissões
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://renato0503.github.io/Mobile_CasaM_RotasZonas/" class="nav-link">
+                    <i class="fa fa-map-location-dot"></i> Rotas & Zonas
+                </a>
+            </li>
+        </ul>
+
+        <div class="user-info">
+            <div class="avatar">F</div>
+            <div>
+                <div style="font-weight:600; font-size:14px;">Fausto</div>
+                <div style="font-size:11px; color:var(--text-secondary);">Administrador</div>
+            </div>
+        </div>
+    </aside>
+
+    <header class="app-header">
+        <div class="header-left">
+            <button class="menu-btn" onclick="toggleMenu()"><i class="fa fa-bars"></i></button>
+            <div class="app-title">Sales Intel <span>Fevereiro 2026</span></div>
+        </div>
+        <div class="header-actions">
+            <button class="action-btn" onclick="exportCSV()"><i class="fa fa-download"></i></button>
+        </div>
+    </header>
+
+    <button class="fab" onclick="openModal()"><i class="fa fa-plus"></i></button>
+
+    <main class="container">
+
+        <div class="kpi-scroller">
+            <div class="kpi-card" style="border-top: 2px solid var(--brand-blue);">
+                <div class="kpi-head">
+                    <span class="kpi-label">Faturamento</span>
+                    <span class="kpi-badge bg-up">+12%</span>
+                </div>
+                <span class="kpi-value" id="kpiRevenue">R$ 0</span>
+                <span class="kpi-sub">Meta: 500k (85%)</span>
+            </div>
+            
+            <div class="kpi-card" style="border-top: 2px solid var(--brand-green);">
+                <div class="kpi-head">
+                    <span class="kpi-label">Margem Real</span>
+                    <span class="kpi-badge bg-up">+2.1%</span>
+                </div>
+                <span class="kpi-value" id="kpiMargin" style="color:var(--brand-green)">R$ 0</span>
+                <span class="kpi-sub">Média: <span id="kpiMarginPerc">0%</span></span>
+            </div>
+
+            <div class="kpi-card" style="border-top: 2px solid var(--brand-gold);">
+                <div class="kpi-head">
+                    <span class="kpi-label">Volume</span>
+                    <span class="kpi-badge bg-down">-1.5%</span>
+                </div>
+                <span class="kpi-value" id="kpiVolume">0 Ton</span>
+                <span class="kpi-sub">Previsto: 55 Ton</span>
+            </div>
+
+            <div class="kpi-card" style="border-top: 2px solid var(--brand-red);">
+                <div class="kpi-head">
+                    <span class="kpi-label">Churn Risk</span>
+                    <span class="kpi-badge bg-down">Crítico</span>
+                </div>
+                <span class="kpi-value" id="kpiChurn" style="color:var(--brand-red)">0</span>
+                <span class="kpi-sub">Clientes inativos</span>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <span class="section-title" style="margin:0">Evolução Vendas</span>
+                <div class="chart-controls">
+                    <button>Sem</button>
+                    <button class="active">Mês</button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <span class="section-title" style="margin:0">Matriz Eficiência</span>
+            </div>
+            <div class="matrix-container">
+                <span class="q-label ql-1">Estrelas</span>
+                <span class="q-label ql-2">Oportunidade</span>
+                <span class="q-label ql-3">Volumétrico</span>
+                <span class="q-label ql-4">Crítico</span>
+                <canvas id="matrixChart"></canvas>
+            </div>
+            <p style="font-size:10px; color:#666; text-align:center; margin-top:10px">Eixo X: Vendas | Eixo Y: Margem | Bolha: Volume</p>
+        </div>
+
+        <div class="section-title">
+            Ranking Vendedores
+            <i class="fa fa-filter" style="color:var(--brand-blue)"></i>
+        </div>
+        <div class="table-wrapper">
+            <table class="custom-table" id="salesTable">
+                <thead>
+                    <tr>
+                        <th>Vendedor</th>
+                        <th>Vendas</th>
+                        <th>Margem</th>
+                        <th>Meta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">
+            Alertas de Churn
+            <span style="font-size:10px; color:var(--brand-red)">Top 5 Críticos</span>
+        </div>
+        <ul class="crm-list" id="crmList">
+            </ul>
+
+    </main>
+
+    <div class="modal-overlay" id="saleModal">
+        <div class="modal-sheet">
+            <div class="sheet-header">
+                <span class="sheet-title">Nova Venda</span>
+                <button class="action-btn" onclick="closeModal()" style="color:var(--text-secondary)"><i class="fa fa-times"></i></button>
+            </div>
+            <form id="saleForm">
+                <div class="ios-input-group">
+                    <label class="ios-label">Vendedor</label>
+                    <select id="mAgent" class="ios-input">
+                        </select>
+                </div>
+                <div class="ios-input-group">
+                    <label class="ios-label">Cliente (Razão Social)</label>
+                    <input type="text" class="ios-input" placeholder="Ex: Padaria Central">
+                </div>
+                <div style="display:flex; gap:15px">
+                    <div class="ios-input-group" style="flex:1">
+                        <label class="ios-label">Valor (R$)</label>
+                        <input type="number" id="mValue" class="ios-input" placeholder="0.00">
+                    </div>
+                    <div class="ios-input-group" style="flex:1">
+                        <label class="ios-label">Custo (R$)</label>
+                        <input type="number" id="mCost" class="ios-input" placeholder="0.00">
+                    </div>
+                </div>
+                <div style="display:flex; gap:15px">
+                    <div class="ios-input-group" style="flex:1">
+                        <label class="ios-label">Peso (Kg)</label>
+                        <input type="number" id="mKg" class="ios-input" placeholder="0">
+                    </div>
+                    <div class="ios-input-group" style="flex:1">
+                        <label class="ios-label">Data</label>
+                        <input type="date" class="ios-input">
+                    </div>
+                </div>
+                <button type="button" class="ios-btn btn-primary" onclick="addSale()">Registrar Venda</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG & STATE ---
+        const fmtMoney = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        const fmtNum = new Intl.NumberFormat('pt-BR');
+        
+        // Setup Menu Toggle
+        function toggleMenu() {
+            const drawer = document.getElementById('mainDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if(drawer.classList.contains('active')) {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        // Data Mock
+        let agents = [
+            { id: 1, name: 'Carlos Silva', route: 'Sinop', img: 'https://i.pravatar.cc/150?u=1', sales: 154000, cost: 128000, kg: 8500, goal: 160000 },
+            { id: 2, name: 'Ana Pereira', route: 'Várzea G.', img: 'https://i.pravatar.cc/150?u=2', sales: 82000, cost: 78000, kg: 3200, goal: 90000 },
+            { id: 3, name: 'Roberto Dias', route: 'Lucas R.V.', img: 'https://i.pravatar.cc/150?u=3', sales: 210000, cost: 165000, kg: 12000, goal: 200000 },
+            { id: 4, name: 'Fernanda L.', route: 'Rondon.', img: 'https://i.pravatar.cc/150?u=4', sales: 98000, cost: 82000, kg: 4500, goal: 110000 },
+            { id: 5, name: 'João Souza', route: 'Balcão', img: 'https://i.pravatar.cc/150?u=5', sales: 45000, cost: 30000, kg: 2000, goal: 50000 }
+        ];
+
+        let churnData = [
+            { client: 'Padaria Pão Dourado', agent: 'Carlos Silva', days: 48, value: 5000 },
+            { client: 'Mercado Central', agent: 'Roberto Dias', days: 35, value: 12000 },
+            { client: 'Hotel Mato Grosso', agent: 'Ana Pereira', days: 62, value: 2500 },
+            { client: 'Confeitaria Doce Vida', agent: 'Carlos Silva', days: 29, value: 8000 }
+        ];
+
+        let trendChart, matrixChart;
+
+        // --- INIT ---
+        window.onload = () => {
+            renderDashboard();
+            initCharts();
+            populateAgentSelect();
+        };
+
+        // --- RENDER LOGIC ---
+        function renderDashboard() {
+            // 1. Calculate Totals
+            let totalRev = 0, totalCost = 0, totalKg = 0;
+            agents.forEach(a => {
+                totalRev += a.sales;
+                totalCost += a.cost;
+                totalKg += a.kg;
+            });
+            let totalMargin = totalRev - totalCost;
+            let marginPerc = (totalMargin / totalRev) * 100;
+
+            // 2. Update KPI Cards
+            document.getElementById('kpiRevenue').innerText = fmtMoney.format(totalRev);
+            document.getElementById('kpiMargin').innerText = fmtMoney.format(totalMargin);
+            document.getElementById('kpiMarginPerc').innerText = marginPerc.toFixed(1) + '%';
+            document.getElementById('kpiVolume').innerText = (totalKg/1000).toFixed(1) + ' Ton';
+            
+            const highRisk = churnData.filter(c => c.days > 45).length;
+            document.getElementById('kpiChurn').innerText = highRisk;
+
+            // 3. Render Table
+            const tbody = document.querySelector('#salesTable tbody');
+            tbody.innerHTML = '';
+            
+            let sortedAgents = [...agents].sort((a,b) => b.sales - a.sales);
+
+            sortedAgents.forEach(a => {
+                const margin = a.sales - a.cost;
+                const percent = (a.sales / a.goal) * 100;
+                let statusColor = '#0a84ff'; 
+                if(percent >= 100) statusColor = '#30d158';
+                if(percent < 70) statusColor = '#ff453a';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="agent-flex">
+                            <img src="${a.img}" class="agent-img">
+                            <div>
+                                <div style="font-weight:600; font-size:13px">${a.name}</div>
+                                <div style="font-size:10px; color:#888">${a.route}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-weight:700">${fmtMoney.format(a.sales)}</td>
+                    <td style="color:${margin>0 ? '#30d158':'#ff453a'}">${fmtMoney.format(margin)}</td>
+                    <td>
+                        <div style="font-size:11px">${percent.toFixed(0)}%</div>
+                        <div style="width:50px; height:4px; background:#333; border-radius:2px; margin-top:2px">
+                            <div style="width:${Math.min(percent,100)}%; height:100%; background:${statusColor}; border-radius:2px"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 4. Render CRM List
+            const crmList = document.getElementById('crmList');
+            crmList.innerHTML = '';
+            
+            churnData.sort((a,b) => b.days - a.days).forEach(c => {
+                const riskLevel = c.days > 45 ? 'high' : 'medium';
+                const colorClass = c.days > 45 ? 'text-red' : 'text-orange';
+                
+                crmList.innerHTML += `
+                    <li class="crm-item ${riskLevel}">
+                        <div class="crm-info">
+                            <h4>${c.client}</h4>
+                            <p>${c.agent} • ${fmtMoney.format(c.value)}</p>
+                        </div>
+                        <div class="crm-days">
+                            <span class="${colorClass}" style="font-size:14px; font-weight:700">${c.days}d</span>
+                            <span>inativo</span>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        // --- CHARTS ---
+        function initCharts() {
+            Chart.defaults.font.family = "-apple-system, sans-serif";
+            Chart.defaults.color = "#8e8e93";
+
+            // Trend Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [
+                        { label: 'Vendas', data: [85000, 92000, 88000, 105000], borderColor: '#ffd60a', tension: 0.4 },
+                        { label: 'Custo', data: [68000, 72000, 70000, 81000], borderColor: '#333', borderDash: [5,5], tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#2c2c2e' }, ticks: { display: false } },
+                        x: { grid: { display:false } }
+                    }
+                }
+            });
+
+            // Matrix Chart
+            const ctxMatrix = document.getElementById('matrixChart').getContext('2d');
+            updateMatrixData(ctxMatrix);
+        }
+
+        function updateMatrixData(ctx) {
+            const dataPoints = agents.map(a => {
+                const marginPerc = ((a.sales - a.cost) / a.sales) * 100;
+                return { x: a.sales, y: marginPerc, r: (a.kg/1000) + 5, agent: a.name };
+            });
+
+            if(matrixChart) matrixChart.destroy();
+
+            matrixChart = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        data: dataPoints,
+                        backgroundColor: (c) => {
+                            const v = c.raw;
+                            if(v.y > 15 && v.x > 100000) return '#30d158'; 
+                            if(v.y < 5) return '#ff453a'; 
+                            if(v.x < 100000 && v.y > 15) return '#0a84ff'; 
+                            return '#ff9f0a'; 
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // --- ACTIONS ---
+        function openModal() { document.getElementById('saleModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('saleModal').style.display = 'none'; }
+        
+        function populateAgentSelect() {
+            const sel = document.getElementById('mAgent');
+            agents.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.innerText = a.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        function addSale() {
+            const id = parseInt(document.getElementById('mAgent').value);
+            const val = parseFloat(document.getElementById('mValue').value);
+            const cost = parseFloat(document.getElementById('mCost').value);
+            const kg = parseFloat(document.getElementById('mKg').value);
+
+            const agent = agents.find(a => a.id === id);
+            if(agent) {
+                agent.sales += val;
+                agent.cost += cost;
+                agent.kg += kg;
+                
+                renderDashboard();
+                updateMatrixData(document.getElementById('matrixChart').getContext('2d'));
+                trendChart.data.datasets[0].data[3] += val;
+                trendChart.update();
+                
+                closeModal();
+                alert(`Sucesso!`);
+            }
+        }
+
+        function exportCSV() {
+            let csv = "Vendedor,Rota,Volume(Kg),Vendas,Custo,Margem\n";
+            agents.forEach(a => {
+                csv += `${a.name},${a.route},${a.kg},${a.sales},${a.cost},${a.sales-a.cost}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'performance_comercial.csv';
+            a.click();
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const m = document.getElementById('saleModal');
+            if (event.target == m) { m.style.display = "none"; }
+        }
+
+    </script>
+</body>
+</html>
